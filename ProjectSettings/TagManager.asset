@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - PickUp
+  - Ground
+  - Tower
+  - Walls
+  - Wall
   layers:
   - Default
   - TransparentFX

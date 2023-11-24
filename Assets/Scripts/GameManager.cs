@@ -4,6 +4,8 @@ using UnityEngine;
 using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using TMPro;
+using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
@@ -26,11 +28,21 @@ public class GameManager : MonoBehaviour
 
     private bool success;
 
+    public List<ZoneManager> Zones;
+
+    public int currentZone;
+
+    public int totalCollectibles;
+
+    public UnityEvent<int> OnNextZone;
+
     // Start is called before the first frame update
     void Start()
     {
         // Initialize count to zero.
         count = 0;
+
+        totalCollectibles = GetTotalCollectibles();
 
         // Initialize time.
         currentTime = 0;
@@ -40,14 +52,18 @@ public class GameManager : MonoBehaviour
 
         // Initially set the win text to be inactive.
         winTextObject.SetActive(false);
+
+        
     }
+   
 
     // Update is called once per frame
     void Update()
     {
+ 
         if (!success) {
-        currentTime += Time.deltaTime;
-        timerText.text = "Timer : " + currentTime.ToString("00.000");
+            currentTime += Time.deltaTime;
+            timerText.text = "Timer : " + currentTime.ToString("00.000");
         }
     }
 
@@ -67,11 +83,10 @@ public class GameManager : MonoBehaviour
         countText.text = "Count : " + count.ToString();
 
         // Check if the count has reached or exceeded the win condition.
-        if (count >= 15)
+        if (count >= totalCollectibles)
         {
             // Display the win text.
             winTextObject.SetActive(true);
-
             success = true;
         }
     }
@@ -83,10 +98,43 @@ public class GameManager : MonoBehaviour
         other.gameObject.SetActive(false);
 
         // Increment the count of "PickUp" objects collected.
-        count = count + 1;
-
+        count++;
+        
         // Update the count display.
-        GameManager.Manager.SetCountText(count);
+        SetCountText(count);
+
+        Zones[currentZone].CollectibleCount--;
+
+        // Update the CollectibleCount of the current zone.
+        int indicatorZone = Zones[currentZone].CollectibleCount;
+
+        if (indicatorZone <= 0)
+        {
+            Zones[currentZone].Door.SetActive(false);
+            currentZone++;
+            NextZone();
+        }
+    }
+    private int GetTotalCollectibles()
+    {
+        int total = 0;
+
+        foreach (ZoneManager zone in Zones)
+        {
+            total += zone.CollectibleCount;
+        }
+
+        return total;
+    }
+
+    public void NextZone()
+    {
+        OnNextZone.Invoke(currentZone);
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(0);
     }
 
 

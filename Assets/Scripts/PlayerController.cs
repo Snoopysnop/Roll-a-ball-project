@@ -7,6 +7,7 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
+    public bool isOnGround;
     // Rigidbody of the player.
     private Rigidbody rb;
 
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     {
         // Get and store the Rigidbody component attached to the player.
         rb = GetComponent<Rigidbody>();
+        isOnGround = true;
     }
 
     // This function is called when a move input is detected.
@@ -39,7 +41,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         // Create a 3D movement vector using the X and Y inputs.
-        Vector3 movement = new Vector3(movementX, 0.0f, movementY);
+        Vector3 movement = new (movementX, 0.0f, movementY);
 
         // Apply force to the Rigidbody to move the player.
         rb.AddForce(movement * speed);
@@ -53,4 +55,37 @@ public class PlayerController : MonoBehaviour
             GameManager.Manager.Collect(other);
         }
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isOnGround = true;
+        }
+            
+    }
+
+    void OnJump(InputValue jumpValue)
+    {
+/*        if (isOnGround)
+        {*/
+            isOnGround = false;
+            Vector3 impulse = new (0f, 3.5f, 0f);
+            rb.AddForce(impulse, ForceMode.Impulse);
+/*        }*/
+    }
+
+
+    public void GotHit()
+    {
+        GameManager.Manager.RestartGame();
+    }
+
+    
+       public void playerIsOnPlatformJump()
+    {
+        Vector3 impulse = new(0f, 15f, 0f);
+        rb.AddForce(impulse, ForceMode.Impulse);
+    }
+
 }
